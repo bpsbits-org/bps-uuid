@@ -7,6 +7,8 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.UUID
 import java.util.concurrent.ThreadLocalRandom
+import org.eclipse.microprofile.openapi.annotations.media.Schema
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType
 
 /**
  * A type-safe UUID Version 7 (time-ordered).
@@ -18,6 +20,11 @@ import java.util.concurrent.ThreadLocalRandom
  */
 @Serializable(with = UUIDv7Serializer::class)
 @JvmInline
+@Schema(
+    type = SchemaType.STRING, format = "uuid",
+    description = "A time-ordered UUID Version 7 (RFC 9562)",
+    example = "019d87a3-e6ae-7480-86dc-d6947d9dc112"
+)
 value class UUIDv7 internal constructor(private val raw: UUID) {
 
     companion object {

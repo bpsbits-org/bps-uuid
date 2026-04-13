@@ -6,7 +6,7 @@
 
     <groupId>org.bpsbits</groupId>
     <artifactId>bps-uuid</artifactId>
-    <version>0.0.1</version>
+    <version>0.1.0</version>
     <name>UUIDv7 Utility</name>
     <description>Tiny utility for creating and parsing v7 UUID's.</description>
     <url>https://github.com/bpsbits-org/bps-uuid</url>
@@ -231,6 +231,13 @@
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-serialization-core</artifactId>
             <version>${kotlin.serializer.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.openapi</groupId>
+            <artifactId>microprofile-openapi-api</artifactId>
+            <version>4.1.1</version>
+            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
