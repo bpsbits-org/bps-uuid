@@ -34,4 +34,4 @@ fun UUID.validateIsV7(): UUID {
  *
  * @return The date and time when this UUID was generated, or `null` if this is not a valid UUIDv7.
  */
-fun UUID.resolveDate(): ZonedDateTime? = if (isV7) UUIDv7(this).date else null
+fun UUID.resolveDate(): ZonedDateTime? = if (isV7) UUIDv7(this.toString()).date else null

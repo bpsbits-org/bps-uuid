@@ -9,6 +9,8 @@ import java.util.UUID
 import java.util.concurrent.ThreadLocalRandom
 import org.eclipse.microprofile.openapi.annotations.media.Schema
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 /**
  * A type-safe UUID Version 7 (time-ordered).
@@ -18,14 +20,14 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType
  *
  * Thread-safe for creation, parsing, validation, and date extraction.
  */
+@ConsistentCopyVisibility
 @Serializable(with = UUIDv7Serializer::class)
-@JvmInline
 @Schema(
     type = SchemaType.STRING, format = "uuid",
     description = "A time-ordered UUID Version 7 (RFC 9562)",
     example = "019d87a3-e6ae-7480-86dc-d6947d9dc112"
 )
-value class UUIDv7 internal constructor(private val raw: UUID) {
+data class UUIDv7 internal constructor(private val raw: String) {
 
     companion object {
 
@@ -35,7 +37,7 @@ value class UUIDv7 internal constructor(private val raw: UUID) {
          * This is the **only** intended way to get a fresh UUIDv7.
          */
         @JvmStatic
-        operator fun invoke(): UUIDv7 = UUIDv7(randomV7UUID())
+        operator fun invoke(): UUIDv7 = UUIDv7(asString())
 
         /**
          * Generates a version 7 UUID based on the current timestamp and random values.
@@ -127,12 +129,13 @@ value class UUIDv7 internal constructor(private val raw: UUID) {
          */
         @JvmStatic
         fun valueOf(str: String): UUIDv7 {
+            val trimmed = str.trim()
             val uuid = try {
-                UUID.fromString(str.trim())
+                UUID.fromString(trimmed)
             } catch (e: IllegalArgumentException) {
                 throw IllegalArgumentException("Given string does not contain a UUID: '$str'", e)
             }
-            if (isV7(uuid)) return UUIDv7(uuid) else {
+            if (isV7(uuid)) return UUIDv7(trimmed) else {
                 throw IllegalArgumentException("Given string does not contain version 7 of UUID: $str")
             }
         }
@@ -147,7 +150,7 @@ value class UUIDv7 internal constructor(private val raw: UUID) {
         @JvmStatic
         fun validateUUID(uuidToValidate: UUID): UUIDv7 {
             require(isV7(uuidToValidate)) { "Not v7 UUID: $uuidToValidate. Should contain datetime and version number." }
-            return UUIDv7(uuidToValidate)
+            return UUIDv7(uuidToValidate.toString())
         }
 
         /**
@@ -165,12 +168,12 @@ value class UUIDv7 internal constructor(private val raw: UUID) {
     /**
      * Returns a string representation of current [UUIDv7].
      */
-    override fun toString(): String = raw.toString()
+    override fun toString(): String = raw
 
     /**
      * Returns the underlying raw [java.util.UUID].
      */
-    fun toUUID(): UUID = raw
+    fun toUUID(): UUID = UUID.fromString(raw)
 
     /**
      * The creation date and time of this UUIDv7 (extracted from its timestamp).
@@ -179,6 +182,21 @@ value class UUIDv7 internal constructor(private val raw: UUID) {
         get() {
             val timestamp = extractTimestamp(this.toUUID())
             return Instant.ofEpochMilli(timestamp).atZone(ZoneOffset.UTC)
+        }
+
+    /**
+     * The creation date and time of this UUIDv7 in a structured form.
+     */
+    val dateInfo: UUIDDateTimeInfo
+        get() {
+            val dt = date
+            return UUIDDateTimeInfo(
+                iso = dt.format(DateTimeFormatter.ISO_INSTANT),
+                date = dt.format(DateTimeFormatter.ISO_LOCAL_DATE),
+                time = dt.format(DateTimeFormatter.ISO_LOCAL_TIME),
+                timestamp = dt.toInstant().toEpochMilli(),
+                zone = if (dt.zone == ZoneOffset.UTC) "UTC" else dt.zone.id
+            )
         }
 
 }
